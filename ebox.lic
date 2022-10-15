@@ -1,4 +1,4 @@
-#You may only obtain one EVENT BOX per account, please use EVENT BOX CONFIRM if you want your EVENT BOX.  It cost 500,000 silver that you must have on you (no notes)!
+#This script will take you to the Mist Harbor Bank, purchase an event box, empty the event box, and toss the event box if it is empty.
 
 Script.run("go2","3672") if Room.current.id !~ 3672; fput("stow all"); sleep 1
 fput "event box"
