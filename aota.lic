@@ -1,0 +1,140 @@
+start_script 'burnbrooch' if !running?('burnbrooch') if Char.name =~ /Nemdenia/
+start_script 'itemsupercharger' if !running?('itemsupercharger') if Char.name =~ /Nemdenia/
+start_script 'nemsupport' if !running?('nemsupport') if Char.name =~ /Nemdenia/
+start_script 'stand' if !running?('stand')
+
+def cube()
+	if Room.current.id == 26800
+		fput "get my stone cube from my #{Vars.lootsack}"
+		cube = waitfor "Get what?", "cube from in your"
+		if cube =~ /Get what?/
+			echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+			echo "       You have no more stone cubes for AotA     "
+			echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+			exit
+		elsif cube =~ /cube from in your/
+			fput "pay"
+			pay = waitfor "You have too many items to enter the area", "escorts you into one of the available cursed pits"
+			if pay =~ /You have too many items to enter the area/
+				echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+				echo "     You have too many items to enter the area      "
+				echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+				exit
+			elsif pay =~ /escorts you into one of the available cursed pits/
+				fput "stow my stone cube"
+				fput "gird"
+			end
+		end	
+	else
+		routine()
+	end
+end
+
+def self.get_target
+    npcs = GameObj.npcs.find_all  { |npc| npc.name =~ // }
+	npcs.delete_if { |npc| npc.name =~ /huge incarnadine vathor|lithe dark-skinned abyran'ra/ }
+	npcs.delete_if { |npc| npc.noun =~ /fox|mandrake|unicorn|wisp/i }
+    npcs.delete_if { |npc| npc.type =~ /companion|familiar/i && npc.type !~ /aggressive npc/i }
+    target = npcs.find{ |npc| npc.name =~ // }
+    return target
+end
+
+def buffs
+	#SYMBOL OF COURAGE
+	Spell[9805].cast if !Spell[9805].active? && Spell[9805].known? && Spell[9805].affordable?
+	#SYMBOL OF PROTECTION
+	Spell[9806].cast if !Spell[9806].active? && Spell[9806].known? && Spell[9806].affordable?
+	#SIGN OF WARDING
+	dothistimeout "sign of warding", 3, /Your dancing fingers weave a web of protection around you!/ if !Spell[9903].active? && Spell[9903].known? && Spell[9903].affordable? && !Spell[9903].active?
+	#SIGN OF DEFENDING
+	dothistimeout "sign of defending", 3, /Your dancing fingers weave a web of protection around you!/ if !Spell[9907].active? && Spell[9907].known? && Spell[9907].affordable? && !Spell[9907].active?
+	#SIGN OF SHIELDS
+	dothistimeout "sign of shields", 3, /Your dancing fingers weave a web of protection around you!/ if !Spell[9913].active? && Spell[9913].known? && Spell[9913].affordable? && checkspirit >= 8 && !Spell[9913].active?
+	#SIGN OF STRIKING
+	dothistimeout "sign of striking", 3, /You (?:flex your muscles|grip your .*?) with renewed vigor!/ if !Spell[9904].active? && Spell[9904].known? && Spell[9904].affordable? && !Spell[9904].active? && Char.name =~ /Daenamaryllis|Roseantha/
+	#SIGN OF SMITING
+	dothistimeout "sign of smiting", 3, /You (?:flex your muscles|grip your .*?) with renewed vigor!/ if !Spell[9908].active? && Spell[9908].known? && Spell[9908].affordable? && !Spell[9908].active? && Char.name =~ /Daenamaryllis|Roseantha/
+	#SIGN OF SWORDS
+	dothistimeout "sign of swords", 3, /You (?:flex your muscles|grip your .*?) with renewed vigor!/ if !Spell[9912].active? && Spell[9912].known? && Spell[9912].affordable? && checkspirit >= 8 && !Spell[9912].active? && Char.name =~ /Daenamaryllis|Roseantha/
+	#SIGIL OF DEFENSE
+	dothistimeout "sigil of defense", 3, /A shimmering aura surrounds you/ if !Spell[9707].active? && Spell[9707].known? && Spell[9707].affordable? && checkstamina > 25
+	#SIGIL OF OFFENSE
+	dothistimeout "sigil of offense", 3, /A faint blue glow surrounds your hands, subtly guiding your movements/ if !Spell[9708].active? && Spell[9708].known? && Spell[9708].affordable? && checkstamina > 25
+	#SIGIL OF CONCENTRATION
+	dothistimeout "sigil of concentration", 3, /As you concentrate on your sigil, you feel more attuned to the flows of mana/ if !Spell[9714].active? && Spell[9714].known? && Spell[9714].affordable? && checkstamina > 25
+	#WIZARDS SHIELD
+	Spell[919].cast if !Spell[919].active? && Spell[919].known? && Spell[919].affordable? && Char.name =~ /Roseantha/
+end
+
+def attack
+	target = self.get_target
+	#####################################################################
+	if target
+		while !(target.status =~ /dead|gone/) && !dead?
+			if Char.name =~ /Nemdenia/
+				dothistimeout "rub fly flower", 3, /You suddenly start moving light-footedly./ if Spell[506].affordable? && !(Effects::Buffs.to_h.include?("Celerity"))
+				waitcastrt?
+				fput("stance offensive") if checkstance !~ /offensive/
+				fput("kill") if target.status !~ /dead|gone/
+			end
+#####ENTER YOUR ATTACK ROUTINE HERE#####			
+			waitcastrt?
+			waitrt?
+			sleep 0.25
+		end
+	end
+end
+
+def routine
+	if Room.current.id == 26808
+		sleep 1
+		if GameObj.right_hand.noun =~ /heart/
+			fput "break my heart"
+			waitrt?
+			fput "stow all"
+			fput "get coin"
+		else
+			fput "stow all"
+		end
+		Script.run("go2","26800")
+		echo "Script paused for 10 seconds."
+		echo "Script paused for 10 seconds."
+		echo "Script paused for 10 seconds."
+		echo "Script paused for 10 seconds."
+		echo "Script paused for 10 seconds."
+		pause 10
+		actions = [Script.run("go2","29369"), Script.run("go2","29373"), Script.run("go2","29385"), Script.run("go2","29365")]
+		actions.sample
+		Script.run("buff") if Char.name =~ /Nemdenia/
+		Script.run("waggle") if Char.name !~ /Nemdenia/
+		echo "Waiting for MIND to fall below 80%."
+		wait_until { percentmind < 100 }
+		wait_until { percentmana > 80 }
+		Script.run("go2","26800") if Room.current.id !~ 26800; fput("stow all")		
+		cube()
+		sleep 5
+		fput "beg"
+	elsif Room.current.id == 26800
+		cube()
+		sleep 5
+		fput "beg"
+	elsif checkroom "Arena of the Abyss, Cursed Pit"
+		attack()
+	end
+end
+
+Script.run("go2","26800") if Room.current.id !~ 26800; fput("stow all")
+
+loop {
+	while line = get
+		if line =~ /Skeletal hands clatter as they applaud throughout the stands!/
+			waitrt?
+			fput "stow all"
+			sleep 5
+		else
+			buffs()
+			routine()
+		end
+	end
+	sleep 0.25
+}

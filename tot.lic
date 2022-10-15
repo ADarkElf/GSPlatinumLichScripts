@@ -1,0 +1,213 @@
+start_script 'burnbrooch' if !running?('burnbrooch') if Char.name =~ /Nemdenia/
+start_script 'itemsupercharger' if !running?('itemsupercharger') if Char.name =~ /Nemdenia/
+start_script 'nemsupport' if !running?('nemsupport') if Char.name =~ /Nemdenia/
+start_script 'stand' if !running?('stand')
+
+def key()
+	fput "stow all"
+	if Room.current.id == 29561
+		fput "get my barrel key from my #{Vars.lootsack}"
+		key = waitfor "Get what?", "key from in your"
+		if key =~ /Get what?/
+			echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+			echo "        You have no more barrel keys for ToT        "
+			echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+			exit
+		elsif key =~ /key from in your/
+			fput "go entry"
+			entry = waitfor "You have too many items to enter the area", "accepts your barrel key and unlocks a large gated entry"
+			if entry =~ /You have too many items to enter the area/
+				echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+				echo "     You have too many items to enter the area      "
+				echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+				exit
+			elsif entry =~ /accepts your barrel key and unlocks a large gated entry/
+				fput "stow my barrel key"
+				fput "ready weapon"
+			end
+		end
+	end
+end
+
+def self.get_target
+    npcs = GameObj.npcs.find_all  { |npc| npc.name =~ // }
+	npcs.delete_if { |npc| npc.name =~ /grey-robed spectral priestess/ }
+	npcs.delete_if { |npc| npc.noun =~ /fox|mandrake|unicorn|wisp/i }
+    npcs.delete_if { |npc| npc.type =~ /companion|familiar/i && npc.type !~ /aggressive npc/i }
+    target = npcs.find{ |npc| npc.name =~ // }
+    return target
+end
+
+def buffs
+	#SYMBOL OF COURAGE
+	Spell[9805].cast if !Spell[9805].active? && Spell[9805].known? && Spell[9805].affordable?
+	#SYMBOL OF PROTECTION
+	Spell[9806].cast if !Spell[9806].active? && Spell[9806].known? && Spell[9806].affordable?
+	#SIGN OF WARDING
+	dothistimeout "sign of warding", 3, /Your dancing fingers weave a web of protection around you!/ if !Spell[9903].active? && Spell[9903].known? && Spell[9903].affordable? && !Spell[9903].active?
+	#SIGN OF DEFENDING
+	dothistimeout "sign of defending", 3, /Your dancing fingers weave a web of protection around you!/ if !Spell[9907].active? && Spell[9907].known? && Spell[9907].affordable? && !Spell[9907].active?
+	#SIGN OF SHIELDS
+	dothistimeout "sign of shields", 3, /Your dancing fingers weave a web of protection around you!/ if !Spell[9913].active? && Spell[9913].known? && Spell[9913].affordable? && checkspirit >= 8 && !Spell[9913].active?
+	#SIGN OF STRIKING
+	dothistimeout "sign of striking", 3, /You (?:flex your muscles|grip your .*?) with renewed vigor!/ if !Spell[9904].active? && Spell[9904].known? && Spell[9904].affordable? && !Spell[9904].active? && Char.name =~ /Daenamaryllis|Roseantha/
+	#SIGN OF SMITING
+	dothistimeout "sign of smiting", 3, /You (?:flex your muscles|grip your .*?) with renewed vigor!/ if !Spell[9908].active? && Spell[9908].known? && Spell[9908].affordable? && !Spell[9908].active? && Char.name =~ /Daenamaryllis|Roseantha/
+	#SIGN OF SWORDS
+	dothistimeout "sign of swords", 3, /You (?:flex your muscles|grip your .*?) with renewed vigor!/ if !Spell[9912].active? && Spell[9912].known? && Spell[9912].affordable? && checkspirit >= 8 && !Spell[9912].active? && Char.name =~ /Daenamaryllis|Roseantha/
+	#SIGIL OF DEFENSE
+	dothistimeout "sigil of defense", 3, /A shimmering aura surrounds you/ if !Spell[9707].active? && Spell[9707].known? && Spell[9707].affordable? && checkstamina > 25
+	#SIGIL OF OFFENSE
+	dothistimeout "sigil of offense", 3, /A faint blue glow surrounds your hands, subtly guiding your movements/ if !Spell[9708].active? && Spell[9708].known? && Spell[9708].affordable? && checkstamina > 25
+	#SIGIL OF CONCENTRATION
+	dothistimeout "sigil of concentration", 3, /As you concentrate on your sigil, you feel more attuned to the flows of mana/ if !Spell[9714].active? && Spell[9714].known? && Spell[9714].affordable? && checkstamina > 25
+	#WIZARDS SHIELD
+	Spell[919].cast if !Spell[919].active? && Spell[919].known? && Spell[919].affordable? && Char.name =~ /Roseantha/
+end
+
+def attack
+	target = self.get_target
+	#####################################################################
+	if target
+		if target.name =~ /flickering shadowy apparition/
+			routine()
+		elsif target.name !~ /flickering shadowy apparition/
+			if Char.name =~ /Nemdenia/
+			while !(target.status =~ /dead|gone/) && !dead?
+				dothistimeout "rub fly flower", 3, /You suddenly start moving light-footedly./ if Spell[506].affordable? && !(Effects::Buffs.to_h.include?("Celerity")) if Char.name =~ /Nemdenia/
+				fput("stance offensive") if checkstance !~ /offensive/
+				fput("kill") if target.status !~ /dead|gone/
+				waitcastrt?
+				waitrt?
+				sleep 0.25
+			end
+			end
+			if Char.name =~ /Akio/
+			while !(target.status =~ /dead|gone/) && !dead?
+				fput("stance guarded") if checkstance !~ /guarded/
+				dothistimeout "incant 917 cold", 10, /unharmed by the impact|unharmed by the cold|But you don't have any mana!|Your armor prevents the spell from working correctly.|The ground beneath (.*) suddenly calms.|A little bit late for that don't you think?|Wait (.*) seconds.|You are still stunned.|You do not currently have a target.|(.*) is already dead./ || npc.status !~ /dead|gone/ && Spell[917].affordable?
+				waitcastrt?
+			end
+			end
+			if Char.name =~ /Heliantha/
+			while !(target.status =~ /dead|gone/) && !dead?
+				fput("release") if (checkprep != "None")
+				res = dothistimeout "incant 702 ##{target.id}" , 2, /You gesture at a (.*) construct|different spell readied|You do not currently have a target|Could not find a valid target/ if Spell[702].affordable?
+				if res =~ /You gesture at a (.*) construct|You do not currently have a target|Could not find a valid target/
+					fput("stance guarded") if checkstance !~ /guarded/
+					fput("target next")
+					break
+				elsif res =~ /different spell readied/
+					fput("release")
+					break
+				else
+					fput("stance guarded") if checkstance !~ /guarded/
+					waitrt?
+					waitcastrt?
+				end
+			end
+			end
+			if Char.name =~ /Lilium/
+			if !Spell[320].active? && Spell[320].affordable? && Spell[320].known?
+				fput("incant 320") if target.status !~ /dead|gone/ && Spell[320].affordable?
+			end
+			waitcastrt?	
+			fput("incant 309 evoke") if target.status !~ /dead|gone/ && Spell[309].affordable?
+			waitcastrt?			
+			while !(target.status =~ /dead|gone/) && !dead?
+				res = dothistimeout "incant 302 ##{target.id}" , 1, /You gesture at a (.*) construct|different spell readied|You do not currently have a target|Could not find a valid target/ if Spell[302].affordable?
+				if res =~ /You gesture at a (.*) construct|You do not currently have a target|Could not find a valid target/
+					fput("stance guarded") if checkstance !~ /guarded/
+					break
+				elsif res =~ /different spell readied/
+					fput("release")
+					break
+				else
+					fput("stance guarded") if checkstance !~ /guarded/
+					waitrt?
+					waitcastrt?
+				end
+			end
+			end
+			if Char.name =~ /Roseantha/
+			while !(target.status =~ /dead|gone/) && !dead?
+				fput("release") if (checkprep != "None")
+				if !Spell[909].active? && Spell[909].affordable?
+					fput("prep 909")
+					fput("channel")
+					waitcastrt?
+				end
+				fput "tap" if Spell[909].active? && standing? && target.status !~ /prone|rooted/
+				fput("incant 515") if !Effects::Buffs.active?("Rapid Fire") && Spell[515].affordable?
+				waitcastrt?
+				if Effects::Buffs.active?("Rapid Fire")
+					fput("stance offensive") if checkstance !~ /offensive/ && Spell[903].affordable?
+					res = dothistimeout "incant 903 evoke ##{target.id}" , 1, /You gesture at a (.*) construct|different spell readied|You do not currently have a target|Could not find a valid target/ if Spell[903].affordable? && checkstance =~ /offensive/
+					if res =~ /You gesture at a (.*) construct|You do not currently have a target|Could not find a valid target/
+						fput("stance guarded") if checkstance !~ /guarded/
+						fput("target next")
+						break
+					elsif res =~ /different spell readied/
+						fput("release")
+						break
+					else
+						fput("stance guarded") if checkstance !~ /guarded/
+						waitrt?
+						waitcastrt?
+					end
+				end
+			end
+			end
+		sleep 1
+		fput "search #{target}"
+		sleep 1
+		Script.run("foreach","on ground; get item; stow item;")
+		end
+	end
+end
+
+def routine
+	if Room.current.id == 29561	 
+		sleep 1
+		Script.run("foreach","name=warped clay bowl,sealed ointment jar,dried floral mantel scarf,tiny ornamental box,porcelain shaving cup,cracked porcelain vase,fractured blue glass,chipped white rose teapot,cloudy orange tincture vial,cluster of drie flowers,dusty ceramic urn,hollow glass statuette,discarded glass lantern,orb-shaped glass candleholder in inventory; get item; break item; sleep 1; stow all; get coin;")
+		echo "Script paused for 10 seconds."
+		echo "Script paused for 10 seconds."
+		echo "Script paused for 10 seconds."
+		echo "Script paused for 10 seconds."
+		echo "Script paused for 10 seconds."
+		pause 10
+		fput "stow all"
+		actions = [Script.run("go2","29369"), Script.run("go2","29373"), Script.run("go2","29385"), Script.run("go2","29365")]
+		actions.sample
+		echo "Waiting for MIND to fall below 80%."
+		Script.run("buff") if Char.name =~ /Nemdenia/
+		Script.run("waggle") if Char.name !~ /Nemdenia/
+		wait_until { percentmind < 80 }
+		wait_until { percentmana > 80 }
+		Script.run("go2","29561") if Room.current.id !~ 29561		
+		key()
+	elsif Room.current.id != 29561	
+		fput ("ready weapon") if ( righthand.nil? )
+		fput "knock on door" if ( lefthand.nil? ) && checkloot
+		sleep 1
+		fput "stow left" if ( lefthand? )
+		attack()
+		fput "knock on other door" if ( lefthand.nil? ) && checkloot
+		sleep 1
+		fput "stow left" if ( lefthand? )
+		attack()
+		walk
+	end
+end
+
+if checkarea !~ /Endeltime Estates/
+	Script.run("go2","29561") if Room.current.id !~ 29561 ; fput("stow all")
+end
+
+key()
+
+loop {
+	buffs()
+	routine()
+    sleep 0.25
+}

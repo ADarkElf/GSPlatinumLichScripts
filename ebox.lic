@@ -1,0 +1,22 @@
+#You may only obtain one EVENT BOX per account, please use EVENT BOX CONFIRM if you want your EVENT BOX.  It cost 500,000 silver that you must have on you (no notes)!
+
+Script.run("go2","3672") if Room.current.id !~ 3672; fput("stow all"); sleep 1
+fput "event box"
+while line = get
+if line =~ / ([\d,]+) silver /
+	fput "withdraw #{$1.gsub(",","")} silver"
+	fput "event box confirm"
+	fput ("open ##{GameObj.right_hand.id}")
+	Script.run("foreach","in ##{GameObj.right_hand.id}; get item; stow item;")
+	result = dothistimeout "look in ##{GameObj.right_hand.id}", 3, /nothing|empty/
+	if result =~ /nothing|empty/
+		fput "toss ##{GameObj.right_hand.id}"
+		fput "toss ##{GameObj.right_hand.id}"
+	else
+		exit
+	end
+	exit
+else
+	exit
+end
+end

@@ -1,0 +1,11 @@
+who = script.vars[1]
+
+fput "wealth"
+while line = get
+if line =~ /have ([\d,]+) coins with you/
+	fput "give #{who} #{$1.gsub(",","")}"
+	exit
+else
+	exit
+end
+end
